@@ -1,25 +1,41 @@
 (ns videochat.views
-    (:require [re-frame.core :as re-frame]))
+    (:require [re-frame.core    :refer [dispatch subscribe]]
+              [cljs-time.format :as time-format]
+              [clojure.string   :refer [blank?]]))
 
-;; --------------------
-(defn home-panel []
-  (let [name (re-frame/subscribe [:name])]
+(def date-formatter (time-format/formatter "h:mm A"))
+
+(defn message-item [{:keys [content date author]}]
+  (let [date (time-format/unparse date-formatter date)]
+    [:div.message
+     [:div.message__content content]
+     [:div.message__author author]
+     [:div.message__date date]]))
+
+(defn messages []
+  (let [messages (subscribe [:messages])]
     (fn []
-      [:div (str "Hello from " @name ". This is the Home Page.")
-       [:div [:a {:href "#/about"} "go to About Page"]]])))
+      [:div.messages
+       (for [message @messages]
+         ^{:key message} [message-item message])])))
 
-(defn about-panel []
+(defn- submit-handler [e]
+  (.preventDefault e)
+  (let [input-el  (-> e
+                      .-target
+                      (.getElementsByTagName "input")
+                      (aget 0))
+        input-val (.-value input-el)]
+    (when-not (blank? input-val)
+      (set! (.-value input-el) "")
+      (dispatch [:submit-message input-val]))))
+
+(defn message-form []
+  [:form.message-form {:on-submit submit-handler}
+   [:input.message-form__input {:type "text" :name "message"}]])
+
+(defn main []
   (fn []
-    [:div "This is the About Page."
-     [:div [:a {:href "#/"} "go to Home Page"]]]))
-
-;; --------------------
-(defmulti panels identity)
-(defmethod panels :home-panel [] [home-panel])
-(defmethod panels :about-panel [] [about-panel])
-(defmethod panels :default [] [:div])
-
-(defn main-panel []
-  (let [active-panel (re-frame/subscribe [:active-panel])]
-    (fn []
-      (panels @active-panel))))
+    [:div.main
+     [messages]
+     [message-form]]))

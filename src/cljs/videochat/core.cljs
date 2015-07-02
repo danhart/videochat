@@ -7,10 +7,10 @@
               [videochat.views :as views]))
 
 (defn mount-root []
-  (reagent/render [views/main-panel]
+  (reagent/render [views/main]
                   (.getElementById js/document "app")))
 
-(defn ^:export init [] 
+(defn ^:export init []
   (routes/app-routes)
   (re-frame/dispatch-sync [:initialize-db])
   (mount-root))
