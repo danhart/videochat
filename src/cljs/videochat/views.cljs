@@ -1,12 +1,12 @@
 (ns videochat.views
     (:require [re-frame.core    :refer [dispatch subscribe]]
-              [cljs-time.format :as time-format]
+              [cljs-time.format :as time.format]
               [clojure.string   :refer [blank?]]))
 
-(def date-formatter (time-format/formatter "h:mm A"))
+(def date-formatter (time.format/formatter "h:mm A"))
 
 (defn message-item [{:keys [content date author]}]
-  (let [date (time-format/unparse date-formatter date)]
+  (let [date (time.format/unparse date-formatter date)]
     [:div.message
      [:div.message__content content]
      [:div.message__author author]
